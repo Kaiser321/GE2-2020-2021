@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Path : MonoBehaviour {
-
+public class Path : MonoBehaviour
+{
     public List<Vector3> waypoints = new List<Vector3>();
 
     public int next = 0;
@@ -62,9 +62,4 @@ public class Path : MonoBehaviour {
     {
         return next == waypoints.Count - 1;
     }
-
-
-
-
-
 }

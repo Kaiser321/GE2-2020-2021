@@ -1,56 +1,48 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BigBoid : MonoBehaviour
 {
-    
+    [Header("Boid Attributes")]
     public Vector3 velocity;
-    public float speed;
     public Vector3 acceleration;
     public Vector3 force;
+    public float speed;
     public float maxSpeed = 5;
     public float maxForce = 10;
-
     public float mass = 1;
+    public float banking = 0.1f;
+    public float damping = 0.1f;
 
+    [Header("Seek")]
     public bool seekEnabled = true;
     public Transform seekTargetTransform;
     public Vector3 seekTarget;
 
+    [Header("Arrive")]
     public bool arriveEnabled = false;
     public Transform arriveTargetTransform;
     public Vector3 arriveTarget;
     public float slowingDistance = 10;
 
+    [Header("Flee")]
+    public bool fleeEnabled = false;
+    public int fleeDistance;
+    public Transform fleeTargetTransform;
+    public Vector3 fleeTarget;
+
+    [Header("Path Following")]
     public Path path;
     public bool pathFollowingEnabled = false;
     public float waypointDistance = 3;
 
-    // Banking
-    public float banking = 0.1f; 
-
-    public float damping = 0.1f;
-
+    [Header("Player Steering")]
     public bool playerSteeringEnabled = false;
     public float steeringForce = 100;
 
+    [Header("Pursue")]
     public bool pursueEnabled = false;
     public BigBoid pursueTarget;
-
     public Vector3 pursueTargetPos;
-
-    public Vector3 Pursue(BigBoid pursueTarget)
-    {
-        float dist = Vector3.Distance(pursueTarget.transform.position, transform.position);
-
-        float time = dist / maxSpeed;
-
-        pursueTargetPos = pursueTarget.transform.position + pursueTarget.velocity * time;
-
-        return Seek(pursueTargetPos);
-    }
-
 
     public void OnDrawGizmos()
     {
@@ -77,25 +69,35 @@ public class BigBoid : MonoBehaviour
 
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public Vector3 Seek(Vector3 target)
     {
-        
+        Vector3 toTarget = target - transform.position;
+        Vector3 desired = toTarget.normalized * maxSpeed;
+
+        return (desired - velocity);
     }
 
-    public Vector3 PlayerSteering()
+    public Vector3 Arrive(Vector3 target)
     {
-        Vector3 force = Vector3.zero;
+        Vector3 toTarget = target - transform.position;
+        float dist = toTarget.magnitude;
+        float ramped = (dist / slowingDistance) * maxSpeed;
+        float clamped = Mathf.Min(ramped, maxSpeed);
+        Vector3 desired = (toTarget / dist) * clamped;
 
-        force += Input.GetAxis("Vertical") * transform.forward * steeringForce;
+        return desired - velocity;
+    }
 
-        Vector3 projectedRight = transform.right;
-        projectedRight.y = 0;
-        projectedRight.Normalize();
-
-        force += Input.GetAxis("Horizontal") * projectedRight * steeringForce * 0.2f;
-
-        return force;
+    public Vector3 Flee(Vector3 target)
+    {
+        if (Vector3.Distance(transform.position, target) < fleeDistance)
+        {
+            return -Seek(target);
+        }
+        else
+        {
+            return Vector3.zero;
+        }
     }
 
     public Vector3 PathFollow()
@@ -115,23 +117,30 @@ public class BigBoid : MonoBehaviour
         }
     }
 
-    public Vector3 Seek(Vector3 target)
+    public Vector3 PlayerSteering()
     {
-        Vector3 toTarget = target - transform.position;
-        Vector3 desired = toTarget.normalized * maxSpeed;
+        Vector3 force = Vector3.zero;
 
-        return (desired - velocity);
-    } 
+        force += Input.GetAxis("Vertical") * transform.forward * steeringForce;
 
-    public Vector3 Arrive(Vector3 target)
+        Vector3 projectedRight = transform.right;
+        projectedRight.y = 0;
+        projectedRight.Normalize();
+
+        force += Input.GetAxis("Horizontal") * projectedRight * steeringForce * 0.2f;
+
+        return force;
+    }
+
+    public Vector3 Pursue(BigBoid pursueTarget)
     {
-        Vector3 toTarget = target - transform.position;
-        float dist = toTarget.magnitude;
-        float ramped = (dist / slowingDistance) * maxSpeed;
-        float clamped = Mathf.Min(ramped, maxSpeed);
-        Vector3 desired = (toTarget / dist) * clamped;
+        float dist = Vector3.Distance(pursueTarget.transform.position, transform.position);
 
-        return desired - velocity;
+        float time = dist / maxSpeed;
+
+        pursueTargetPos = pursueTarget.transform.position + pursueTarget.velocity * time;
+
+        return Seek(pursueTargetPos);
     }
 
     public Vector3 CalculateForce()
@@ -150,9 +159,18 @@ public class BigBoid : MonoBehaviour
         {
             if (arriveTargetTransform != null)
             {
-                arriveTarget = arriveTargetTransform.position;                
+                arriveTarget = arriveTargetTransform.position;
             }
             f += Arrive(arriveTarget);
+        }
+
+        if (fleeEnabled)
+        {
+            if (fleeTargetTransform != null)
+            {
+                fleeTarget = fleeTargetTransform.position;
+            }
+            f += Flee(fleeTarget);
         }
 
         if (pathFollowingEnabled)
@@ -173,7 +191,6 @@ public class BigBoid : MonoBehaviour
         return f;
     }
 
-    // Update is called once per frame
     void Update()
     {
         force = CalculateForce();
@@ -191,6 +208,6 @@ public class BigBoid : MonoBehaviour
 
             // Remove 10% of the velocity every second
             velocity -= (damping * velocity * Time.deltaTime);
-        }        
+        }
     }
 }
