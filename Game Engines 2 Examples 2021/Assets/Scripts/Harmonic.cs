@@ -54,7 +54,7 @@ public class Harmonic : SteeringBehaviour
         }
         target *= radius;
 
-        Vector3 localtarget = target + Vector3.forward * distance;
+        Vector3 localtarget = target + Vector3.forward * distance; // projecting forward in local space
         worldTarget = transform.position + Quaternion.Euler(rot) * localtarget;
 
         theta += frequency * Time.deltaTime * Mathf.PI * 2.0f;
