@@ -8,6 +8,8 @@ Log
 Logs
 Klak
 
+*.DS_Store
+
 .vs
 .vs/Forms/v15/Server/sqlite3/storage.ide-shm
 .vs/Forms/v15/Server/sqlite3/storage.ide-wal
