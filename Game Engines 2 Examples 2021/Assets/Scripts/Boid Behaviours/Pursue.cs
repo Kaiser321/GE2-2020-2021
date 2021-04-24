@@ -8,11 +8,6 @@ public class Pursue : SteeringBehaviour
 
     Vector3 targetPos;
 
-    public void Start()
-    {
-        
-    }
-
     public void OnDrawGizmos()
     {
         if (Application.isPlaying && isActiveAndEnabled)

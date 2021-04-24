@@ -32,11 +32,6 @@ public class Path : MonoBehaviour {
             waypoints.Add(transform.GetChild(i).position);
         }
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     public Vector3 NextWaypoint()
     {
@@ -62,9 +57,4 @@ public class Path : MonoBehaviour {
     {
         return next == waypoints.Count - 1;
     }
-
-
-
-
-
 }

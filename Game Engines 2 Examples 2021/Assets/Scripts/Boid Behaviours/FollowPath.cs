@@ -20,11 +20,6 @@ public class FollowPath : SteeringBehaviour {
         }
     }
 
-    public void Start()
-    {
-        
-    }
-
     public override Vector3 Calculate()
     {
         nextWaypoint = path.NextWaypoint();
